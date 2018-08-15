@@ -25,7 +25,7 @@ class Client:
 		return self._new_emote(await self._http.create(name, url))
 
 	async def edit(self, name_, *, name=None, description=utils.sentinel):
-		return self._new_emote(await self._http.edit(name, name=name, description=description))
+		return self._new_emote(await self._http.edit(name_, name=name, description=description))
 
 	async def delete(self, name):
 		return self._new_emote(await self._http.delete(name))
