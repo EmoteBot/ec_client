@@ -1,7 +1,8 @@
 import asyncio
+import functools
 import json
 import sys
-from urllib.parse import quote as _uriquote
+from urllib.parse import quote
 
 import aiohttp
 
@@ -12,6 +13,11 @@ from . import __version__
 # Using code provided by Rapptz
 # Copyright © 2015–2017 Rapptz
 # https://github.com/Rapptz/discord.py/blob/4aecdea0524e7b481f9750166bf9e9be287ec445/discord/http.py
+
+# by default, quote doesn't quote /, which we don't want.
+# quote_plus does, but it also encodes " " as "+", which we don't want.
+uriquote = functools.partial(_uriquote, safe='')
+del quote
 
 async def json_or_text(response):
 	text = await response.text(encoding='utf-8')
@@ -27,7 +33,7 @@ class Route:
 		self.method = method
 		url = (self.BASE + self.path)
 		if parameters:
-			self.url = url.format(**{k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+			self.url = url.format(**{k: uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
 		else:
 			self.url = url
 
@@ -63,7 +69,7 @@ class HttpClient:
 			elif response.status == 404:
 				raise NotFound(response, data)
 			else:
-				raise HTTPException(response, data)
+				raise HttpException(response, data)
 
 	def emotes(self):
 		return self.request(Route('GET', '/emotes'))
@@ -75,7 +81,7 @@ class HttpClient:
 		return self.request(Route('GET', '/login'))
 
 	def create(self, name, url):
-		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=url))
+		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=uriquote(url)))
 
 	def edit(self, name_, *, name=None, description=sentinel):
 		data = {}
