@@ -22,8 +22,12 @@ class Emote:
 		self._data = data
 
 		for key, value in data.items():
+			if key in {'id', 'author'}:
+				value = int(value)
+
 			if key in {'created', 'modified'} and value:
 				value = utils.epoch_time(value)
+
 			setattr(self, '_' + key, value)
 
 		return self
