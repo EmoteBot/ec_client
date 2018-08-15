@@ -5,7 +5,7 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound
+from .errors import HttpException, Forbidden, LoginFailure, NotFound
 from .utils import sentinel
 from . import __version__
 
@@ -31,7 +31,7 @@ class Route:
 		else:
 			self.url = url
 
-class HTTPClient:
+class HttpClient:
 	def __init__(self, token=None, *, loop=None):
 		self.token = token
 		self.loop = loop or asyncio.get_event_loop()

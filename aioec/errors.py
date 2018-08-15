@@ -9,7 +9,19 @@ class AioEcError(Exception):
 	"""
 	pass
 
-class HTTPException(AioEcError):
+class ClientException(AioEcError):
+	"""Exception that's thrown when an operation in the :class:`Client` fails.
+
+	These are usually for exceptions that happened due to user input.
+	"""
+	pass
+
+class LoginFailure(ClientException):
+	"""Improper or incorrect token has been passed"""
+	def __init__(self):
+		super().__init__('Invalid or incorrect token has been passed.')
+
+class HttpException(AioEcError):
 	"""Exception that's thrown when an HTTP request operation fails.
 
 	Attributes
@@ -43,16 +55,16 @@ class HTTPException(AioEcError):
 
 		super().__init__(fmt.format(self.response, self.text))
 
-class Forbidden(HTTPException):
+class Forbidden(HttpException):
 	"""Exception that's thrown for when status code 403 occurs.
 
-	Subclass of :exc:`HTTPException`
+	Subclass of :exc:`HttpException`
 	"""
 	pass
 
-class NotFound(HTTPException):
+class NotFound(HttpException):
 	"""Exception that's thrown for when status code 404 occurs.
 
-	Subclass of :exc:`HTTPException`
+	Subclass of :exc:`HttpException`
 	"""
 	pass
