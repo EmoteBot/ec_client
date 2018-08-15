@@ -60,5 +60,17 @@ class Emote:
 			ext='gif' if self.animated else 'png')
 
 	@property
+	def _a(self):
+		return 'a' if self.animated else ''
+
+	@property
 	def as_reaction(self):
-		return '{a}:{0.name}:{0.id}'.format(self, a='a' if self.animated else '')
+		return '{self._a}:{0.name}:{0.id}'.format(self)
+
+	def __str__(self):
+		return '<{self._a}:{0.name}:{0.id}>'.format(self)
+
+	def __repr__(self):
+		return (
+			'{0.__module__}.{0.__class__.__qualname__}'
+			'<name={0.name}, id={0.id}, animated={0.animated}>'.format(self))
