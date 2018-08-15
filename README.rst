@@ -11,11 +11,11 @@ Usage
 
 	import aioec
 
-	ec_client = aioec.Client(token='your token here')
+	client = aioec.Client(token='your token here')
 	# if no token is provided, only anonymous endpoints will be available
 
 	# in a coroutine...
-	emote = await ec_client.emote('Think')
+	emote = await client.emote('Think')
 	emote.name  # Think
 
 	await emote.edit(name='Think_', description='a real happy thinker')
