@@ -5,7 +5,10 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
+from .errors import HTTPException, Forbidden, NotFound
 from . import __version__
+
+sentinel = object()
 
 # Using code provided by Rapptz
 # Copyright © 2015–2017 Rapptz
@@ -13,12 +16,12 @@ from . import __version__
 
 async def json_or_text(response):
 	text = await response.text(encoding='utf-8')
-	if response.headers['content-type'] == 'application/json':
+	if response.content_type == 'application/json':
 		return json.loads(text)
 	return text
 
 class Route:
-	BASE = 'https://emoji-connoisseur.python-for.life/api/v0'
+	BASE = 'http://emoji-connoisseur.python-for.life/api/v0'
 
 	def __init__(self, method, path, **parameters):
 		self.path = path
@@ -35,7 +38,12 @@ class Client:
 		self.loop = loop or asyncio.get_event_loop()
 		user_agent = 'aioec (https://github.com/bmintz/aioec {0} aiohttp/{2} Python/{1[0]}.{1[1]} aiohttp/{2}'
 		self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
-		self._session = aiohttp.ClientSession(headers={'User-Agent': self.user_agent}, loop=self.loop)
+
+		headers = {'User-Agent': self.user_agent}
+		if self.token is not None:
+			headers['Authorization'] = self.token
+
+		self._session = aiohttp.ClientSession(headers=headers, loop=self.loop)
 
 	async def request(self, route, **kwargs):
 		method = route.method
@@ -55,3 +63,20 @@ class Client:
 
 	def emotes(self):
 		return self.request(Route('GET', '/emotes'))
+
+	def emote(self, name):
+		return self.request(Route('GET', '/emote/{name}', name=name))
+
+	def edit(self, name_, *, name=None, description=sentinel):
+		data = {}
+
+		# we perform this dance so that the caller can run it like edit_emote('foo', name='bar')
+		new_name = name
+		name = name_
+
+		if new_name is not None:
+			data['name'] = new_name
+		if description is not sentinel:  # None is an allowed value for description
+			data['description'] = description
+
+		return self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
