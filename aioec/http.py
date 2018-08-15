@@ -35,8 +35,8 @@ class HttpClient:
 	def __init__(self, token=None, *, loop=None):
 		self.token = token
 		self.loop = loop or asyncio.get_event_loop()
-		user_agent = 'aioec (https://github.com/bmintz/aioec {0} aiohttp/{2} Python/{1[0]}.{1[1]} aiohttp/{2}'
-		self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+		user_agent = 'aioec (https://github.com/bmintz/aioec) {0} aiohttp/{1} Python/{2[0]}.{2[1]}'
+		self.user_agent = user_agent.format(__version__, aiohttp.__version__, sys.version_info)
 
 		headers = {'User-Agent': self.user_agent}
 		if self.token is not None:
