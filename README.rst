@@ -15,7 +15,8 @@ Usage
 	# if no token is provided, only anonymous endpoints will be available
 
 	# this step isn't necessary but makes sure that your token is correct
-	await client.login()
+	my_user_id = await client.login()
+	# it returns the user ID associated with your token
 
 	# in a coroutine...
 	emote = await client.emote('Think')
