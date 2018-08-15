@@ -53,7 +53,9 @@ class HttpClient:
 			if response.status in range(200, 300):
 				return data
 
-			if response.status == 403:
+			if response.status == 401:
+				raise LoginFailure
+			elif response.status == 403:
 				raise Forbidden(response, data)
 			elif response.status == 404:
 				raise NotFound(response, data)
