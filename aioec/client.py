@@ -67,6 +67,9 @@ class Client:
 	def emote(self, name):
 		return self.request(Route('GET', '/emote/{name}', name=name))
 
+	def create(self, name, url):
+		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=url))
+
 	def edit(self, name_, *, name=None, description=sentinel):
 		data = {}
 
@@ -80,3 +83,12 @@ class Client:
 			data['description'] = description
 
 		return self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
+
+	def delete(self, name):
+		return self.request(Route('DELETE', '/emote/{name}', name=name))
+
+	def search(self, query):
+		return self.request(Route('GET', '/search/{query}', query=query))
+
+	def popular(self):
+		return self.request(Route('GET', '/popular'))
