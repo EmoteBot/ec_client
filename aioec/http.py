@@ -44,6 +44,9 @@ class HttpClient:
 
 		self._session = aiohttp.ClientSession(headers=headers, loop=self.loop)
 
+	def close(self):
+		return self._session.close()
+
 	async def request(self, route, **kwargs):
 		method = route.method
 		url = route.url

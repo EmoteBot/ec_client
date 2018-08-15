@@ -9,6 +9,9 @@ class Client:
 	def _new_emote(self, data):
 		return Emote(data=data, http=self._http)
 
+	def close(self):
+		return self._http.close()
+
 	async def emotes(self):
 		return map(self._new_emote, await self._http.emotes())
 
