@@ -21,6 +21,14 @@ class Client:
 	async def emote(self, name):
 		return self._new_emote(await self._http.emote(name))
 
+	async def login(self):
+		"""Checks that your token is correct.
+
+		Returns the user ID associated with your token.
+		"""
+
+		return (await self._http.login())['user_id']
+
 	async def create(self, name, url):
 		return self._new_emote(await self._http.create(name, url))
 

@@ -68,6 +68,9 @@ class HttpClient:
 	def emote(self, name):
 		return self.request(Route('GET', '/emote/{name}', name=name))
 
+	def login(self):
+		return self.request(Route('GET', '/login'))
+
 	def create(self, name, url):
 		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=url))
 
