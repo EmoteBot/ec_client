@@ -16,7 +16,7 @@ from . import __version__
 
 # by default, quote doesn't quote /, which we don't want.
 # quote_plus does, but it also encodes " " as "+", which we don't want.
-uriquote = functools.partial(_uriquote, safe='')
+uriquote = functools.partial(quote, safe='')
 del quote
 
 async def json_or_text(response):
