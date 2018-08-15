@@ -2,7 +2,14 @@
 # Copyright © 2015–2017 Rapptz
 # https://github.com/Rapptz/discord.py/blob/f25091efe1281aebe70189c61f9cac405b21a72f/discord/errors.py
 
-class HTTPException(Exception):
+class AioEcError(Exception):
+	"""
+	Base exception type for the library.
+	Can be used to catch any exception raised by this library.
+	"""
+	pass
+
+class HTTPException(AioEcError):
 	"""Exception that's thrown when an HTTP request operation fails.
 
 	Attributes
