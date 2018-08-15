@@ -40,3 +40,9 @@ class Client:
 
 	async def delete(self, name):
 		return self._new_emote(await self._http.delete(name))
+
+	async def __aenter__(self):
+		return self
+
+	def __aexit__(self, *_):
+		return self.close()
