@@ -46,6 +46,8 @@ class HttpException(AioEcError):
 		self.status = response.status
 		if isinstance(message, dict):
 			self.text = message['message']
+			if 'error' in message:
+				self.status = message['error']['status']
 		else:
 			self.text = message
 
