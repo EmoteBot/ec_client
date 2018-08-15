@@ -12,11 +12,12 @@ with open('README.rst') as f:
 
 setuptools.setup(
 	name='aioec',
-	version='0.0.1',
+	version=version,
 	license='MIT',
 	packages=['aioec'],
 	install_requires=['aiohttp>=3.3.0,<3.4.0'],
 	description='async client library for the Emoji Connoisseur API',
+	long_description=readme,
 	classifiers=[
 		'Development Status :: 2 - Pre-Alpha',
 		'Intended Audience :: Developers',
