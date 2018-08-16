@@ -20,6 +20,7 @@ setuptools.setup(
 	install_requires=['aiohttp>=3.3.0,<3.4.0'],
 	description='async client library for the Emoji Connoisseur API',
 	long_description=readme,
+	long_description_content_type='text/x-rst',
 	classifiers=[
 		'Development Status :: 2 - Pre-Alpha',
 		'Intended Audience :: Developers',
