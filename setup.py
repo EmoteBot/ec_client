@@ -12,6 +12,8 @@ with open('README.rst') as f:
 
 setuptools.setup(
 	name='aioec',
+	author='Benjamin Mintz <bmintz@protonmail.com>',
+	homepage='https://github.com/EmojiConnoisseur/aioec',
 	version=version,
 	license='MIT',
 	packages=['aioec'],
