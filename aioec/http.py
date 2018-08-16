@@ -47,7 +47,8 @@ class HttpClient:
 		headers = {'User-Agent': self.user_agent}
 		if self.token is not None:
 			headers['Authorization'] = self.token
-		self.headers = headers
+
+		self._session = aiohttp.ClientSession(headers=headers, loop=self.loop)
 
 	def close(self):
 		return self._session.close()
@@ -56,20 +57,19 @@ class HttpClient:
 		method = route.method
 		url = route.url
 
-		async with aiohttp.ClientSession(headers=self.headers) as session:
-			async with session.request(method, url, **kwargs) as response:
-				data = await json_or_text(response)
-				if response.status in range(200, 300):
-					return data
+		async with self._session.request(method, url, **kwargs) as response:
+			data = await json_or_text(response)
+			if response.status in range(200, 300):
+				return data
 
-				if response.status == 401:
-					raise LoginFailure
-				elif response.status == 403:
-					raise Forbidden(response, data)
-				elif response.status == 404:
-					raise NotFound(response, data)
-				else:
-					raise HttpException(response, data)
+			if response.status == 401:
+				raise LoginFailure
+			elif response.status == 403:
+				raise Forbidden(response, data)
+			elif response.status == 404:
+				raise NotFound(response, data)
+			else:
+				raise HttpException(response, data)
 
 	def emotes(self):
 		return self.request(Route('GET', '/emotes'))
