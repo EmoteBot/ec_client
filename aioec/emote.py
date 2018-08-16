@@ -34,6 +34,9 @@ class Emote:
 
 
 	for field in __slots__:
+		if field in {'_http', '_data'}:
+			continue
+
 		def getter(self, field=field):
 			return getattr(self, field)
 
