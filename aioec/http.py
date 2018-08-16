@@ -81,7 +81,7 @@ class HttpClient:
 		return self.request(Route('GET', '/login'))
 
 	def create(self, name, url):
-		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=uriquote(url)))
+		return self.request(Route('PATCH', '/emote/{name}/{url}', name=name, url=url)
 
 	def edit(self, name_, *, name=None, description=sentinel):
 		data = {}
