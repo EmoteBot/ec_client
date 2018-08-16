@@ -39,16 +39,16 @@ class Route:
 
 class HttpClient:
 	def __init__(self, token=None, *, loop=None):
-		self.token = token
 		self.loop = loop or asyncio.get_event_loop()
 		user_agent = 'aioec (https://github.com/bmintz/aioec) {0} aiohttp/{1} Python/{2[0]}.{2[1]}'
 		self.user_agent = user_agent.format(__version__, aiohttp.__version__, sys.version_info)
 
 		headers = {'User-Agent': self.user_agent}
-		if self.token is not None:
-			headers['Authorization'] = self.token
+		if token is not None:
+			headers['Authorization'] = token
+		self.headers = headers
 
-		self._session = aiohttp.ClientSession(headers=headers, loop=self.loop)
+		self._session = aiohttp.ClientSession(loop=self.loop)
 
 	def close(self):
 		return self._session.close()
@@ -57,7 +57,9 @@ class HttpClient:
 		method = route.method
 		url = route.url
 
-		async with self._session.request(method, url, **kwargs) as response:
+		async with self._session.request(method, url, headers=self.headers, **kwargs) as response:
+			print(response.request_info.headers)
+
 			data = await json_or_text(response)
 			if response.status in range(200, 300):
 				return data
