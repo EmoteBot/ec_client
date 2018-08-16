@@ -12,15 +12,15 @@ with open('README.rst') as f:
 
 setuptools.setup(
 	name='aioec',
-	author='Benjamin Mintz <bmintz@protonmail.com>',
-	homepage='https://github.com/EmojiConnoisseur/aioec',
+	author='Benjamin Mintz',
+	author_email='bmintz@protonmail.com',
+	url='https://github.com/EmojiConnoisseur/aioec',
 	version=version,
 	license='MIT',
 	packages=['aioec'],
 	install_requires=['aiohttp>=3.3.0,<3.4.0'],
 	description='async client library for the Emoji Connoisseur API',
 	long_description=readme,
-	long_description_content_type='text/x-rst',
 	classifiers=[
 		'Development Status :: 2 - Pre-Alpha',
 		'Intended Audience :: Developers',

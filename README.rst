@@ -5,7 +5,7 @@ An aiohttp-based client for the `Emoji Connoisseur API <https://emoji-connoisseu
 
 
 Usage
-----
+-----
 
 .. code-block:: python
 
