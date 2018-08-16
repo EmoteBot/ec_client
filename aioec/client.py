@@ -30,7 +30,7 @@ class Client:
 		Returns the user ID associated with your token.
 		"""
 
-		return (await self._http.login())['user_id']
+		return int(await self._http.login())
 
 	async def create(self, name, url):
 		return self._new_emote(await self._http.create(name, url))
