@@ -68,7 +68,7 @@ class BaseEmote:
 	def __repr__(self):
 		return (
 			'{0.__module__}.{0.__class__.__qualname__}'
-			'<name={0.name}, id={0.id}, animated={0.animated}>'.format(self))
+			'<name={0.name!r}, id={0.id}, animated={0.animated}>'.format(self))
 
 class Emote(BaseEmote):
 	_private_slots_ = frozenset(('_http',))
