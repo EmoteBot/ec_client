@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 import aiohttp
 
-from .errors import HttpException, Forbidden, LoginFailure, NotFound
+from .errors import HttpException, Forbidden, LoginFailure, NotFound, EmoteExists
 from .utils import sentinel
 from . import __version__
 
@@ -68,6 +68,8 @@ class HttpClient:
 				raise Forbidden(response, data)
 			elif response.status == 404:
 				raise NotFound(response, data)
+			elif response.status == 409:  # Conflict
+				raise EmoteExists(response, data['name'])
 			else:
 				raise HttpException(response, data)
 

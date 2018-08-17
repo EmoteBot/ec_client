@@ -68,3 +68,14 @@ class NotFound(HttpException):
 	Subclass of :exc:`HttpException`
 	"""
 	pass
+
+class EmoteExists(HttpException):
+	"""Exception that's thrown for when status code 404 occurs.
+	This happens when an emote already exists with the given name and you tried to create a new one
+	with that name.
+
+	Subclass of :exc:`HttpException`
+	"""
+	def __init__(self, response, name):
+		self.name = name
+		super().__init__(response, 'An emote called {} already exists'.format(name))
