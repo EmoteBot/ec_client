@@ -1,9 +1,9 @@
 from . import utils
 
-class Emote:
-	__slots__ = frozenset((
-		'_data',
-		'_http',
+class BaseEmote:
+	_private_slots_ = frozenset(('_data',))
+
+	__slots__ = _private_slots_ | frozenset((
 		'_name',
 		'_id',
 		'_author',
@@ -15,26 +15,23 @@ class Emote:
 		'_usage',
 	))
 
-	def __new__(cls, *, data, http):
+	def __new__(cls, *, data):
 		self = super().__new__(cls)
-
-		self._http = http
 		self._data = data
 
 		for key, value in data.items():
 			if key in {'id', 'author'}:
 				value = int(value)
 
-			if key in {'created', 'modified'} and value:
+			if key in {'created', 'modified'} and value is not None:
 				value = utils.epoch_time(value)
 
 			setattr(self, '_' + key, value)
 
 		return self
 
-
 	for field in __slots__:
-		if field in {'_http', '_data'}:
+		if field in _private_slots_:
 			continue
 
 		def getter(self, field=field):
@@ -46,15 +43,6 @@ class Emote:
 		del getter, public_name
 
 	del field
-
-	def _new_emote(self, data):
-		return type(self)(http=self._http, data=data)
-
-	async def delete(self):
-		return self._new_emote(await self._http.delete(self.name))
-
-	async def edit(self, *, name=None, description=utils.sentinel):
-		return self._new_emote(await self._http.edit(self.name, name=name, description=description))
 
 	@property
 	def usage(self):
@@ -72,12 +60,31 @@ class Emote:
 
 	@property
 	def as_reaction(self):
-		return '{self._a}:{0.name}:{0.id}'.format(self)
+		return '{0._a}:{0.name}:{0.id}'.format(self)
 
 	def __str__(self):
-		return '<{self._a}:{0.name}:{0.id}>'.format(self)
+		return '<{0._a}:{0.name}:{0.id}>'.format(self)
 
 	def __repr__(self):
 		return (
 			'{0.__module__}.{0.__class__.__qualname__}'
 			'<name={0.name}, id={0.id}, animated={0.animated}>'.format(self))
+
+class Emote(BaseEmote):
+	_private_slots_ = frozenset(('_http',))
+	__slots__ = _private_slots_
+
+	def __new__(cls, *, data, http):
+		self = super().__new__(cls, data=data)
+		self._http = http
+
+		return self
+
+	def _new_emote(self, data):
+		return type(self)(http=self._http, data=data)
+
+	async def delete(self):
+		return self._new_emote(await self._http.delete(self.name))
+
+	async def edit(self, *, name=None, description=utils.sentinel):
+		return self._new_emote(await self._http.edit(self.name, name=name, description=description))

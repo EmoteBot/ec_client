@@ -1,5 +1,5 @@
 from .http import HttpClient
-from .emote import Emote
+from .emote import BaseEmote, Emote
 from . import utils
 
 class Client:
@@ -12,6 +12,9 @@ class Client:
 	def close(self):
 		return self._http.close()
 
+	async def emote(self, name):
+		return self._new_emote(await self._http.emote(name))
+
 	async def emotes(self):
 		return map(self._new_emote, await self._http.emotes())
 
@@ -20,9 +23,6 @@ class Client:
 
 	async def popular(self):
 		return map(self._new_emote, await self._http.popular())
-
-	async def emote(self, name):
-		return self._new_emote(await self._http.emote(name))
 
 	async def login(self):
 		"""Checks that your token is correct.
