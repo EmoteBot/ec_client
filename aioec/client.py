@@ -1,5 +1,5 @@
 from .http import HttpClient
-from .emote import BaseEmote, Emote
+from .emote import Emote
 from . import utils
 
 class Client:
