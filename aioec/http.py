@@ -26,7 +26,7 @@ async def json_or_text(response):
 	return text
 
 class Route:
-	BASE = 'https://emoji-connoisseur.python-for.life/api/v0'
+	BASE = 'https://emote-collector.python-for.life/api/v0'
 
 	def __init__(self, method, path, **parameters):
 		self.path = path

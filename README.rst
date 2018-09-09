@@ -1,7 +1,7 @@
 aioec
 =====
 
-An aiohttp-based client for the `Emoji Connoisseur API <https://emoji-connoisseur.python-for.life>`_.
+An aiohttp-based client for the `Emote Collector API <https://emote-collector.python-for.life/api/v0/docs>`_.
 
 
 Usage
