@@ -1,9 +1,7 @@
 from . import utils
 
 class BaseEmote:
-	_private_slots_ = frozenset(('_data',))
-
-	__slots__ = _private_slots_ | frozenset((
+	__slots__ = frozenset((
 		'_name',
 		'_id',
 		'_author',
@@ -17,7 +15,6 @@ class BaseEmote:
 
 	def __new__(cls, *, data):
 		self = super().__new__(cls)
-		self._data = data
 
 		for key, value in data.items():
 			if key in {'id', 'author'}:
@@ -31,18 +28,14 @@ class BaseEmote:
 		return self
 
 	for field in __slots__:
-		if field in _private_slots_:
-			continue
-
 		def getter(self, field=field):
 			return getattr(self, field)
 
 		public_name = field[1:]
 		getter.__name__ = public_name
 		vars()[public_name] = property(getter)
-		del getter, public_name
 
-	del field
+	del field, getter, public_name
 
 	@property
 	def usage(self):
@@ -71,8 +64,7 @@ class BaseEmote:
 			'<name={0.name!r}, id={0.id}, animated={0.animated}>'.format(self))
 
 class Emote(BaseEmote):
-	_private_slots_ = frozenset(('_http',))
-	__slots__ = _private_slots_
+	__slots__ = frozenset(('_http',))
 
 	def __new__(cls, *, data, http):
 		self = super().__new__(cls, data=data)
