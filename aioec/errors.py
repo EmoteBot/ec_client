@@ -70,7 +70,7 @@ class NotFound(HttpException):
 	pass
 
 class EmoteExists(HttpException):
-	"""Exception that's thrown for when status code 404 occurs.
+	"""Exception that's thrown for when status code 409 occurs.
 	This happens when an emote already exists with the given name and you tried to create a new one
 	with that name.
 
