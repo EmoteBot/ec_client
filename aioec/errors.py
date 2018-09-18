@@ -21,6 +21,19 @@ class LoginFailure(ClientException):
 	def __init__(self):
 		super().__init__('Invalid or incorrect token has been passed.')
 
+class InvalidArgument(ClientException, ValueError, TypeError):
+	"""Exception that’s thrown when an argument to a function is invalid some way
+	(e.g. wrong value or wrong type)."""
+	pass
+
+class EmoteDescriptionTooLongError(InvalidArgument):
+	"""Exception that's thrown when the emote description passed exceeds the limit."""
+	def __init__(self, *, max_length, actual_length):
+		self.max_length = max_length
+		self.actual_length = actual_length
+		super().__init__(
+			'Emote description too long: max={}, got {}'.format(self.max_length, self.actual_length))
+
 class HttpException(AioEcError):
 	"""Exception that's thrown when an HTTP request operation fails.
 
@@ -79,3 +92,38 @@ class EmoteExists(HttpException):
 	def __init__(self, response, name):
 		self.name = name
 		super().__init__(response, 'An emote called {} already exists'.format(name))
+
+class RequestEntityTooLarge(HttpException):
+	"""Exception that's thrown for when status code 413 occurs.
+	This happens when an image that is passed is too big, a URL is passed that refers to an image
+	that's too big, or a description was passed that's too long.
+
+	Subclass of :exc:`HttpException`
+	"""
+	def __init__(self, response, max_size=None, actual_size=None):
+		self.max_size = max_size
+		self.actual_size = actual_size
+		if max_size and actual_size:
+			super().__init__(
+				response,
+				'Data exceeded maximum size ({}), actual size {}'.format(max_size, actual_size))
+		elif max_size:
+			super().__init__(
+				response,
+				'Data exceeded maximum size ({})'.format(max_size))
+		elif actual_size:
+			super().__init__(
+				response,
+				'Data exceeded maximum size, actual size {}'.format(actual_size))
+
+class UnsupportedMediaType(HttpException):
+	"""Exception that's thrown for when status code 419 occurs.
+	This happens when an image that's passed is of an invalid format,
+	or a URL is passed which refers to an image that is of an invalid format.
+
+	Valid formats are JPEG, GIF, and PNG.
+
+	Subclass of :exc:`HttpException`
+	"""
+	def __init__(self, response):
+		super().__init__('The emote image passed is not a JPEG, GIF, or PNG.')

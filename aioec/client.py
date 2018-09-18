@@ -32,8 +32,14 @@ class Client:
 
 		return int(await self._http.login())
 
-	async def create(self, name, url):
-		return self._new_emote(await self._http.create(name, url))
+	async def create(self, *, name, url=None, image=None):
+		"""Create an emote. Exactly one of url or image is required.
+
+		Raises:
+			:class:`RequestEntityTooLarge`: the emote exceeded 16 MiB, or took too long to resize.
+			:class:`UnsupportedMediaType`: the emote was not a PNG, GIF, or JPEG.
+		"""
+		return self._new_emote(await self._http.create(name=name, url=url, image=image))
 
 	async def edit(self, name_, *, name=None, description=utils.sentinel):
 		return self._new_emote(await self._http.edit(name_, name=name, description=description))

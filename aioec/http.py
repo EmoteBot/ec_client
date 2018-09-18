@@ -6,7 +6,16 @@ from urllib.parse import quote
 
 import aiohttp
 
-from .errors import HttpException, Forbidden, LoginFailure, NotFound, EmoteExists
+from .errors import (
+	EmoteDescriptionTooLongError,
+
+	HttpException,
+	Forbidden,
+	LoginFailure,
+	NotFound,
+	EmoteExists,
+	RequestEntityTooLarge,
+	UnsupportedMediaType)
 from .utils import sentinel
 from . import __version__
 
@@ -70,6 +79,10 @@ class HttpClient:
 				raise NotFound(response, data)
 			elif response.status == 409:  # Conflict
 				raise EmoteExists(response, data['name'])
+			elif response.status == 413:
+				raise RequestEntityTooLarge(response, data.get('max_size'), data.get('actual_size'))
+			elif response.status == 415:
+				raise UnsupportedMediaType
 			else:
 				raise HttpException(response, data)
 
@@ -82,10 +95,17 @@ class HttpClient:
 	def login(self):
 		return self.request(Route('GET', '/login'))
 
-	def create(self, name, url):
-		return self.request(Route('PUT', '/emote/{name}/{url}', name=name, url=url))
+	async def create(self, *, name, url=None, image: bytes = None):
+		if not url and not image or url and image:
+			raise InvalidArgument('exactly one of url or image is required')
 
-	def edit(self, name_, *, name=None, description=sentinel):
+		if url:
+			return await self.request(Route('PUT', '/emote/{name}/{url}', name=name, url=url))
+
+		if image:
+			return await self.request(Route('PUT', '/emote/{name}', name=name), data=image)
+
+	async def edit(self, name_, *, name=None, description=sentinel):
 		data = {}
 
 		# we perform this dance so that the caller can run it like edit_emote('foo', name='bar')
@@ -97,7 +117,12 @@ class HttpClient:
 		if description is not sentinel:  # None is an allowed value for description
 			data['description'] = description
 
-		return self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
+		try:
+			return await self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
+		except RequestEntityTooLarge as exception:
+			raise EmoteDescriptionTooLongError(
+				max_length=exception.max_size,
+				actual_length=exception.actual_size) from None
 
 	def delete(self, name):
 		return self.request(Route('DELETE', '/emote/{name}', name=name))
