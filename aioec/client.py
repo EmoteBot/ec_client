@@ -16,13 +16,13 @@ class Client:
 		return self._new_emote(await self._http.emote(name))
 
 	async def emotes(self):
-		return map(self._new_emote, await self._http.emotes())
+		return list(map(self._new_emote, await self._http.emotes()))
 
 	async def search(self, query):
-		return map(self._new_emote, await self._http.search(query))
+		return list(map(self._new_emote, await self._http.search(query)))
 
 	async def popular(self):
-		return map(self._new_emote, await self._http.popular())
+		return list(map(self._new_emote, await self._http.popular()))
 
 	async def login(self):
 		"""Checks that your token is correct.
