@@ -86,8 +86,11 @@ class HttpClient:
 			else:
 				raise HttpException(response, data)
 
-	def emotes(self):
-		return self.request(Route('GET', '/emotes'))
+	async def emotes(self):
+		try:
+			return await self.request(Route('GET', '/emotes'))
+		except NotFound:
+			return []
 
 	def emote(self, name):
 		return self.request(Route('GET', '/emote/{name}', name=name))
@@ -127,8 +130,15 @@ class HttpClient:
 	def delete(self, name):
 		return self.request(Route('DELETE', '/emote/{name}', name=name))
 
-	def search(self, query):
-		return self.request(Route('GET', '/search/{query}', query=query))
+	async def search(self, query):
+		try:
+			return await self.request(Route('GET', '/search/{query}', query=query))
+		except NotFound:
+			return []
 
-	def popular(self):
-		return self.request(Route('GET', '/popular'))
+	async def popular(self):
+		try:
+			return await self.request(Route('GET', '/popular'))
+		except NotFound:
+			return []
+
