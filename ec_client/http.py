@@ -1,10 +1,9 @@
-import asyncio
 import functools
 import json
 import sys
 from urllib.parse import quote
 
-import aiohttp
+import requests
 
 from .errors import (
 	EmoteDescriptionTooLongError,
@@ -28,11 +27,11 @@ from . import __version__
 uriquote = functools.partial(quote, safe='')
 del quote
 
-async def json_or_text(response):
-	text = await response.text(encoding='utf-8')
-	if response.content_type == 'application/json':
-		return json.loads(text)
-	return text
+def json_or_text(response):
+	try:
+		return response.json()
+	except json.JSONDecodeError:
+		return response.text
 
 class Route:
 	BASE = 'https://emote-collector.python-for.life/api/v0'
@@ -47,50 +46,56 @@ class Route:
 			self.url = url
 
 class HttpClient:
-	def __init__(self, token=None, *, loop=None):
+	def __init__(self, token=None):
 		self.token = token
-		self.loop = loop or asyncio.get_event_loop()
-		user_agent = 'aioec (https://github.com/bmintz/aioec) {0} aiohttp/{1} Python/{2[0]}.{2[1]}'
-		self.user_agent = user_agent.format(__version__, aiohttp.__version__, sys.version_info)
+		user_agent = 'ec_client (https://github.com/EmoteCollector/ec_client) {0} requests/{1} Python/{2[0]}.{2[1]}'
+		self.user_agent = user_agent.format(__version__, requests.__version__, sys.version_info)
+		self._session = requests.Session()
 
 		headers = {'User-Agent': self.user_agent}
 		if self.token is not None:
 			headers['Authorization'] = self.token
 
-		self._session = aiohttp.ClientSession(headers=headers, loop=self.loop)
+		self._session.headers.update(headers)
 
 	def close(self):
 		return self._session.close()
 
-	async def request(self, route, **kwargs):
+	def request(self, route, **kwargs):
 		method = route.method
 		url = route.url
 
-		async with self._session.request(method, url, **kwargs) as response:
-			data = await json_or_text(response)
-			if response.status in range(200, 300):
+		with self._session.request(method, url, **kwargs) as response:
+			data = json_or_text(response)
+			if response.status_code in range(200, 300):
 				return data
 
-			if response.status == 401:
+			if response.status_code == 401:
 				raise LoginFailure
-			elif response.status == 403:
+			elif response.status_code == 403:
 				raise Forbidden(response, data)
-			elif response.status == 404:
+			elif response.status_code == 404:
 				raise NotFound(response, data)
-			elif response.status == 409:  # Conflict
+			elif response.status_code == 409:  # Conflict
 				raise EmoteExists(response, data['name'])
-			elif response.status == 413:
+			elif response.status_code == 413:
 				raise RequestEntityTooLarge(response, data.get('max_size'), data.get('actual_size'))
-			elif response.status == 415:
+			elif response.status_code == 415:
 				raise UnsupportedMediaType
 			else:
 				raise HttpException(response, data)
 
-	async def emotes(self):
-		try:
-			return await self.request(Route('GET', '/emotes'))
-		except NotFound:
-			return []
+	def _get_or_empty_list(func):
+		def wrapped(*args, **kwargs):
+			try:
+				return func(*args, **kwargs)
+			except NotFound:
+				return []
+		return wrapped
+
+	@_get_or_empty_list
+	def emotes(self):
+		return self.request(Route('GET', '/emotes'))
 
 	def emote(self, name):
 		return self.request(Route('GET', '/emote/{name}', name=name))
@@ -98,17 +103,17 @@ class HttpClient:
 	def login(self):
 		return self.request(Route('GET', '/login'))
 
-	async def create(self, *, name, url=None, image: bytes = None):
+	def create(self, *, name, url=None, image: bytes = None):
 		if not url and not image or url and image:
 			raise InvalidArgument('exactly one of url or image is required')
 
 		if url:
-			return await self.request(Route('PUT', '/emote/{name}/{url}', name=name, url=url))
+			return self.request(Route('PUT', '/emote/{name}/{url}', name=name, url=url))
 
 		if image:
-			return await self.request(Route('PUT', '/emote/{name}', name=name), data=image)
+			return self.request(Route('PUT', '/emote/{name}', name=name), data=image)
 
-	async def edit(self, name_, *, name=None, description=sentinel):
+	def edit(self, name_, *, name=None, description=sentinel):
 		data = {}
 
 		# we perform this dance so that the caller can run it like edit_emote('foo', name='bar')
@@ -121,7 +126,7 @@ class HttpClient:
 			data['description'] = description
 
 		try:
-			return await self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
+			return self.request(Route('PATCH', '/emote/{name}', name=name), json=data)
 		except RequestEntityTooLarge as exception:
 			raise EmoteDescriptionTooLongError(
 				max_length=exception.max_size,
@@ -130,15 +135,12 @@ class HttpClient:
 	def delete(self, name):
 		return self.request(Route('DELETE', '/emote/{name}', name=name))
 
-	async def search(self, query):
-		try:
-			return await self.request(Route('GET', '/search/{query}', query=query))
-		except NotFound:
-			return []
+	@_get_or_empty_list
+	def search(self, query):
+		return self.request(Route('GET', '/search/{query}', query=query))
 
-	async def popular(self):
-		try:
-			return await self.request(Route('GET', '/popular'))
-		except NotFound:
-			return []
+	@_get_or_empty_list
+	def popular(self):
+		return self.request(Route('GET', '/popular'))
 
+	del _get_or_empty_list

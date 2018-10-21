@@ -2,14 +2,14 @@
 # Copyright © 2015–2017 Rapptz
 # https://github.com/Rapptz/discord.py/blob/f25091efe1281aebe70189c61f9cac405b21a72f/discord/errors.py
 
-class AioEcError(Exception):
+class EcClientError(Exception):
 	"""
 	Base exception type for the library.
 	Can be used to catch any exception raised by this library.
 	"""
 	pass
 
-class ClientException(AioEcError):
+class ClientException(EcClientError):
 	"""Exception that's thrown when an operation in the :class:`Client` fails.
 
 	These are usually for exceptions that happened due to user input.
@@ -34,37 +34,33 @@ class EmoteDescriptionTooLongError(InvalidArgument):
 		super().__init__(
 			'Emote description too long: max={}, got {}'.format(self.max_length, self.actual_length))
 
-class HttpException(AioEcError):
+class HttpException(EcClientError):
 	"""Exception that's thrown when an HTTP request operation fails.
 
 	Attributes
 	------------
-	response: aiohttp.ClientResponse
-		The response of the failed HTTP request. This is an
-		instance of `aiohttp.ClientResponse`__. In some cases
-		this could also be a ``requests.Response``.
+	response: requests.Response
+		The response of the failed HTTP request.
 
-		__ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
+		__ http://docs.python-requests.org/en/master/api/#requests.Response
 
 	text: :class:`str`
 		The text of the error. Could be an empty string.
 	status: :class:`int`
 		The status code of the HTTP request.
-	code: :class:`int`
-		The Discord specific error code for the failure.
 	"""
 
 	def __init__(self, response, message):
 		self.response = response
-		self.status = response.status
+		self.status = response.status_code
 		if isinstance(message, dict):
 			self.text = message.get('message')
 		else:
 			self.text = message
 
-		fmt = '{0.reason} (status code: {0.status})'
+		fmt = '{0.reason} (status code: {0.status_code})'
 		if self.text:
-			fmt = fmt + ': {1}'
+			fmt += ': {1}'
 
 		super().__init__(fmt.format(self.response, self.text))
 
@@ -115,6 +111,8 @@ class RequestEntityTooLarge(HttpException):
 			super().__init__(
 				response,
 				'Data exceeded maximum size, actual size {}'.format(actual_size))
+		else:
+			super().__init__(response, 'Data exceeded maximum size')
 
 class UnsupportedMediaType(HttpException):
 	"""Exception that's thrown for when status code 419 occurs.

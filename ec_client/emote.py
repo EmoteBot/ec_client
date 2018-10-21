@@ -75,8 +75,8 @@ class Emote(BaseEmote):
 	def _new_emote(self, data):
 		return type(self)(http=self._http, data=data)
 
-	async def delete(self):
-		return self._new_emote(await self._http.delete(self.name))
+	def delete(self):
+		return self._new_emote(self._http.delete(self.name))
 
-	async def edit(self, *, name=None, description=utils.sentinel):
-		return self._new_emote(await self._http.edit(self.name, name=name, description=description))
+	def edit(self, *, name=None, description=utils.sentinel):
+		return self._new_emote(self._http.edit(self.name, name=name, description=description))
